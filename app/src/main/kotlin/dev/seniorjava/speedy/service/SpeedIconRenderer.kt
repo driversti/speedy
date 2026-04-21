@@ -43,8 +43,8 @@ class SpeedIconRenderer @Inject constructor(
     fun render(sample: SpeedSample): Bitmap {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-        val up = "↑ " + formatter.formatCompact(sample.uploadBps)
-        val down = "↓ " + formatter.formatCompact(sample.downloadBps)
+        val up = "↑" + formatter.formatCompact(sample.uploadBps)
+        val down = "↓" + formatter.formatCompact(sample.downloadBps)
 
         canvas.drawText(up, SIZE_PX / 2f, UP_BASELINE_PX, paint)
         canvas.drawText(down, SIZE_PX / 2f, DOWN_BASELINE_PX, paint)
@@ -52,9 +52,12 @@ class SpeedIconRenderer @Inject constructor(
     }
 
     private companion object {
-        const val SIZE_PX = 48
-        const val TEXT_SIZE_PX = 18f
-        const val UP_BASELINE_PX = 19f
-        const val DOWN_BASELINE_PX = 42f
+        // 96 px matches status_bar_icon_size at xxxhdpi — supplying a smaller
+        // asset (the spec's 48 px) makes the system's resizer fall back to
+        // a blank / invisible small icon on modern Pixels.
+        const val SIZE_PX = 96
+        const val TEXT_SIZE_PX = 48f
+        const val UP_BASELINE_PX = 44f
+        const val DOWN_BASELINE_PX = 94f
     }
 }
