@@ -11,3 +11,6 @@ local.properties
 /app/build/
 *.keystore
 *.jks
+
+# Superpowers brainstorming session state
+.superpowers/
