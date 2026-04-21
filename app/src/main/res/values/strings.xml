@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Speedy</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Network speed</string>
+    <string name="notification_channel_description">Shows download/upload speed in the status bar</string>
+    <string name="notification_title">Network speed</string>
+    <string name="notification_text">↓ %1$s | ↑ %2$s</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Network speed</string>
+    <string name="dashboard_monitor_switch_label">Speed monitor</string>
+    <string name="dashboard_monitor_switch_description">Toggle the status bar speed display</string>
+    <string name="dashboard_status_label">Service status</string>
+    <string name="dashboard_status_active">Active</string>
+    <string name="dashboard_status_waiting">Waiting for network</string>
+    <string name="dashboard_status_stopped">Stopped</string>
+
+    <string name="dashboard_live_speed_title">Live speed</string>
+    <string name="dashboard_download_label">Download</string>
+    <string name="dashboard_upload_label">Upload</string>
+    <string name="dashboard_speed_placeholder">—</string>
+
+    <!-- Permissions -->
+    <string name="permissions_title">Permissions</string>
+    <string name="permission_notifications_title">Notifications</string>
+    <string name="permission_notifications_description">Required to show the speed icon in the status bar</string>
+    <string name="permission_notifications_missing">Permission not granted — service cannot start</string>
+    <string name="permission_notifications_granted">Permission granted</string>
+    <string name="permission_notifications_cta">Grant permission</string>
+
+    <string name="permission_channel_disabled_title">Notification channel disabled</string>
+    <string name="permission_channel_disabled_description">Enable the notification channel in settings to see the speed icon</string>
+    <string name="permission_channel_disabled_cta">Open settings</string>
+
+    <string name="permission_battery_title">Battery optimization</string>
+    <string name="permission_battery_description">Disable battery optimization so the service is not killed in the background</string>
+    <string name="permission_battery_cta">Open settings</string>
+    <string name="permission_battery_ignored">Optimization disabled</string>
+</resources>

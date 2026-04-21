@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Speedy</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Швидкість мережі</string>
+    <string name="notification_channel_description">Відображення швидкості завантаження/вивантаження у статус-барі</string>
+    <string name="notification_title">Швидкість мережі</string>
+    <string name="notification_text">↓ %1$s | ↑ %2$s</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Швидкість мережі</string>
+    <string name="dashboard_monitor_switch_label">Моніторинг швидкості</string>
+    <string name="dashboard_monitor_switch_description">Увімкнути або вимкнути відображення швидкості у статус-барі</string>
+    <string name="dashboard_status_label">Статус сервісу</string>
+    <string name="dashboard_status_active">Активний</string>
+    <string name="dashboard_status_waiting">Очікує мережу</string>
+    <string name="dashboard_status_stopped">Зупинений</string>
+
+    <string name="dashboard_live_speed_title">Жива швидкість</string>
+    <string name="dashboard_download_label">Завантаження</string>
+    <string name="dashboard_upload_label">Вивантаження</string>
+    <string name="dashboard_speed_placeholder">—</string>
+
+    <!-- Permissions -->
+    <string name="permissions_title">Дозволи</string>
+    <string name="permission_notifications_title">Сповіщення</string>
+    <string name="permission_notifications_description">Необхідно для відображення швидкості у статус-барі</string>
+    <string name="permission_notifications_missing">Дозвіл не наданий — сервіс не може бути запущений</string>
+    <string name="permission_notifications_granted">Дозвіл надано</string>
+    <string name="permission_notifications_cta">Надати дозвіл</string>
+
+    <string name="permission_channel_disabled_title">Канал сповіщень вимкнено</string>
+    <string name="permission_channel_disabled_description">Увімкніть канал сповіщень у налаштуваннях, щоб побачити іконку швидкості</string>
+    <string name="permission_channel_disabled_cta">Відкрити налаштування</string>
+
+    <string name="permission_battery_title">Оптимізація батареї</string>
+    <string name="permission_battery_description">Вимкніть оптимізацію, щоб сервіс не зупинявся у фоні</string>
+    <string name="permission_battery_cta">Відкрити налаштування</string>
+    <string name="permission_battery_ignored">Оптимізацію вимкнено</string>
+</resources>
