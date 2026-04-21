@@ -1,87 +1,146 @@
-# Network Speed Monitor - Technical Specification
+# Network Speed Monitor — Technical Specification
 
-Цей документ описує технічні деталі та архітектуру для Android застосунку, який відображає швидкість інтернет-з'єднання в панелі статусу.
+This document describes the technical details and architecture of the Android
+app that displays internet connection speed in the status bar.
 
-## 1. Загальна інформація та Технічний Стек
-- **Мова:** Kotlin.
-- **UI Фреймворк:** Jetpack Compose (Material 3).
-- **Асинхронність:** Kotlin Coroutines & `StateFlow`.
+> The Ukrainian original is preserved at [`SPEC-uk.md`](SPEC-uk.md).
+
+## 1. Overview and Technical Stack
+- **Language:** Kotlin.
+- **UI framework:** Jetpack Compose (Material 3).
+- **Concurrency:** Kotlin Coroutines & `StateFlow`.
 - **Dependency Injection:** Dagger Hilt.
-- **Зберігання налаштувань:** Jetpack DataStore (Preferences) — для збереження конфігурації (наприклад, стан `isEnabled: Boolean`, щоб знати, чи запускатися після перезавантаження пристрою).
+- **Settings storage:** Jetpack DataStore (Preferences) — used to persist
+  configuration (e.g. the `isEnabled: Boolean` flag, so the app knows whether
+  to restart after device reboot).
 - **SDK:** `minSdk = 26` (Android 8.0), `targetSdk = 35`, `compileSdk = 35`.
-- **Локалізація:** `uk` (за замовчуванням), `en` (fallback).
-- **Аналітика та Crash Reporting:** З метою збереження максимальної енергоефективності та приватності — свідомо **не** використовуються жодні сторонні трекери.
+- **Localization:** `uk` (default), `en` (fallback).
+- **Analytics & crash reporting:** deliberately **none** — no third-party
+  trackers, for maximum energy efficiency and privacy.
 
-## 2. Функціональні вимоги та Алгоритми
-- **Відображення в статус-барі:** Постійне сповіщення (Foreground Service). Іконка генерується динамічно як `Bitmap` із текстом швидкості `Upload` та `Download`.
-- **Інтервал оновлення:** Цільовий — 1000 мс (один тік на секунду) реалізовано через `delay(1000)` в рамках Coroutine, яка відстежує стан.
-- **Обчислення швидкості (Формула з усуненням дрейфу таймера):**
-  - Дельта розраховується з урахуванням реального часу, що минув між тіками, для уникнення похибок таймера (наприклад, 1050 мс замість 1000 мс):
+## 2. Functional requirements and algorithms
+- **Status bar display:** persistent notification (Foreground Service). The
+  icon is generated dynamically as a `Bitmap` with upload and download speed
+  text.
+- **Refresh interval:** target is 1000 ms (one tick per second), implemented
+  via `delay(1000)` inside a Coroutine that watches state.
+- **Speed calculation (drift-corrected formula):**
+  - The delta uses the real elapsed time between ticks to avoid timer error
+    (e.g. 1050 ms instead of 1000 ms):
   ```kotlin
   bitsPerSecond = (currentBytes - previousBytes) * 8 * 1000 / elapsedMs
   ```
-- **Масштабування (Formatter) та Пороги:** 
-  Округлення **до цілих чисел**, окрім діапазону Gbps — там **дозволяється 1 знак після коми** для збереження точності та читабельності (наприклад `1.2G`). Діапазони:
-  - `< 1 000 bps` → показувати у **bps**
-  - `1 000 – 999 999 bps` → показувати у **Kbps**
-  - `1 000 000 – 999 999 999 bps` → показувати у **Mbps**
-  - `>= 1 000 000 000 bps` → показувати у **Gbps** (або `G`)
-- **Розширене сповіщення (Шторка):**
-  - Заголовок `Швидкість мережі`
-  - Текст: `↓ 14 Mbps | ↑ 2 Mbps` (динамічно оновлюється).
-  - **Дія при натисканні (Tap):** Відкриття Dashboard за допомогою `PendingIntent.getActivity`. Обов'язково використовувати флаг `PendingIntent.FLAG_IMMUTABLE` (вимога Android 12+).
+- **Scaling (formatter) and thresholds:**
+  Round to **integers**, except in the Gbps range where **one decimal place**
+  is allowed for precision and readability (e.g. `1.2G`). Ranges:
+  - `< 1 000 bps` → show in **bps**
+  - `1 000 – 999 999 bps` → show in **Kbps**
+  - `1 000 000 – 999 999 999 bps` → show in **Mbps**
+  - `>= 1 000 000 000 bps` → show in **Gbps** (or `G`)
+- **Expanded notification (drawer):**
+  - Title: `Network speed`.
+  - Body: `↓ 14 Mbps | ↑ 2 Mbps` (updated dynamically).
+  - **Tap action:** opens the Dashboard via `PendingIntent.getActivity`.
+    The `PendingIntent.FLAG_IMMUTABLE` flag is mandatory (Android 12+
+    requirement).
 
-## 3. UI/UX та Accessibility
-- **Лейаут іконки Status Bar:** 
-  Текст розташовано вертикально: зверху Upload, знизу Download. 
+## 3. UI/UX and accessibility
+- **Status-bar icon layout:**
+  Text is stacked vertically — upload on top, download at the bottom:
   `↑ 2M`
   `↓ 14M`
-  *Скорочення:* значення понад 999 обрізати до макс. 4 символів (з урахуванням крапки для діапазону Gbps).
-- **Головний екран (Dashboard):**
-  - **Switch** для увімкнення/вимкнення моніторингу.
-  - **Статус сервісу:** Текстовий індикатор: "Активний / Очікує мережу / Зупинений".
-  - **Жива швидкість:** Відображається той самий потік швидкості, що й у сервісі (зв'язок відбувається через спільний Hilt Singleton `StateFlow`). Коли Switch вимкнено (сервіс зупинено) — показувати прочерки (`— / —`).
-  - **Дозволи:** Блок керування дозволами (`POST_NOTIFICATIONS` та Battery Optimization). 
-- **Accessibility:** Для всіх активних елементів (Switch, кнопки) прописати коректні `contentDescription` для підтримки TalkBack.
-- **Dark/Light Theme:** Динамічна підтримка системної теми (Compose Material 3 Theme).
+  *Shortening rule:* values above 999 are truncated to at most 4 characters
+  (including the decimal point in the Gbps range).
+- **Home screen (Dashboard):**
+  - **Switch** to enable/disable monitoring.
+  - **Service status:** textual indicator — "Active / Waiting for network /
+    Stopped".
+  - **Live speed:** shows the same speed stream the service uses
+    (communicated via a shared Hilt-`@Singleton` `StateFlow`). When the
+    Switch is off (service stopped), render dashes (`— / —`).
+  - **Permissions:** a permission management block covering
+    `POST_NOTIFICATIONS` and Battery Optimization.
+- **Accessibility:** all interactive elements (Switch, buttons) must have
+  proper `contentDescription` for TalkBack support.
+- **Dark/Light theme:** dynamic system theme support (Compose Material 3
+  Theme).
 
-## 4. Стратегія тестування
-- **Unit-тести:** Обов'язкове покриття для класу-калькулятора та форматера (SpeedFormatter), перевірка обробки нульових дельт, overflow (від'ємних значень) та коректного округлення порогів до цілих/сотень мегабітів.
-- **Instrumented/UI тести:** Тестування Compose Dashboard, відображення станів StateFlow.
+## 4. Testing strategy
+- **Unit tests:** required coverage for the calculator and the formatter
+  (`SpeedFormatter`) — verify zero-delta handling, overflow (negative
+  values), and correct rounding of thresholds to whole integers / hundreds
+  of Mbps.
+- **Instrumented / UI tests:** exercise the Compose Dashboard and verify
+  `StateFlow` state rendering.
 
-## 5. Нефункціональні вимоги та Memory Management
-- **Зчитування трафіку:** Використання `TrafficStats.getTotalRxBytes()` / `getTotalTxBytes()`. Дані включають весь системний трафік, що гарантує високу продуктивність.
-- **Bitmap Management та Монохромність (CRITICAL):**
-  - `smallIcon` у Status Bar є монохромним. Обов'язково створюється `Bitmap` конфігурації `Bitmap.Config.ALPHA_8` з розміром `48x48 px`. Це зменшує споживання пам'яті в 4 рази. 
-  - `Paint.color` встановлюється рівним `Color.WHITE` (система бере виключно альфа-значення для малювання).
-  - На старті створюється **тільки один** екземпляр `Bitmap` і `Canvas`. Для кожного нового тіку об'єкт перевикористовується: `Canvas` очищається викликом `drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)`, наноситься оновлений текст, і передається в `Icon.createWithBitmap()`. 
+## 5. Non-functional requirements and memory management
+- **Traffic reading:** use `TrafficStats.getTotalRxBytes()` /
+  `getTotalTxBytes()`. The data includes all system traffic, which
+  guarantees high performance.
+- **Bitmap management and monochrome rendering (CRITICAL):**
+  - The `smallIcon` in the status bar is monochrome. A `Bitmap` of config
+    `Bitmap.Config.ALPHA_8` must be used, sized `48x48 px`. This cuts memory
+    use by 4×.
+  - `Paint.color` is set to `Color.WHITE` (the system uses only the alpha
+    channel for drawing).
+  - Only **one** `Bitmap` + `Canvas` instance is created at startup. On
+    every tick the object is reused: the `Canvas` is cleared with
+    `drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)`, the updated text
+    is drawn, and the bitmap is handed to `Icon.createWithBitmap()`.
 
-## 6. Граничні випадки (Edge Cases)
-- **Мережа відключена (Airplane Mode):** Моніторинг призупиняється, іконка повністю приховується, а `ConnectivityManager.NetworkCallback` чекає на мережу для поновлення.
-- **Відмова у POST_NOTIFICATIONS (Android 13+):** Заборонено стартувати `Foreground Service`. На Dashboard виводиться червоний Alert з кнопкою переходу в налаштування. Коли дозвіл отримано через callback `ActivityResultLauncher.registerForActivityResult(RequestPermission())` — сервіс запускається.
-- **Константи Notifications:** 
+## 6. Edge cases
+- **No network (airplane mode):** monitoring is paused, the icon is
+  completely hidden, and `ConnectivityManager.NetworkCallback` waits for a
+  network to resume.
+- **`POST_NOTIFICATIONS` denied (Android 13+):** the Foreground Service is
+  **not** allowed to start. The Dashboard shows a red alert with a button
+  to open settings. When the permission is granted via the
+  `ActivityResultLauncher.registerForActivityResult(RequestPermission())`
+  callback, the service starts.
+- **Notification constants:**
   - `const val CHANNEL_ID = "speed_monitor_channel"`
   - `const val NOTIFICATION_ID = 1`
-  Якщо користувач вимикає сповіщення каналу у налаштуваннях ОС, Dashboard інформує про це запитом на увімкнення перемикача.
-- **Doze / Оптимізація Батареї:** Broadcast повідомлення `Intent.ACTION_SCREEN_OFF` зупиняє розрахунки таймера, а `ACTION_SCREEN_ON` відновлює сервіс та оновлює Bitmap одразу.
-- **Аномалії розрахунку:** 
-  - *Перший тік:* delta = 0, попередні байти зберігаються, виводиться `0 bps`.
-  - *Overflow / Від'ємна дельта:* При рестарті інтерфейсу або переповненні лічильника ОС, `currentBytes < previousBytes`. Це розцінюється як "Перший тік", delta = 0.
-- **Автозапуск після ребуту:** 
-  `BroadcastReceiver` слухає виключно `android.intent.action.BOOT_COMPLETED`. (Без `directBootAware`). Сервіс запуститься після того, як пристрій буде вперше розблоковано. Це критично важливо, оскільки сховище налаштувань DataStore/SharedPreferences у Credential Protected Storage недоступне до першого розблокування. Читання стану раніше призведе до IOException (crash).
+  If the user disables the channel's notifications in OS settings, the
+  Dashboard prompts them to re-enable the switch.
+- **Doze / battery optimization:** an `Intent.ACTION_SCREEN_OFF` broadcast
+  stops the tick timer; `ACTION_SCREEN_ON` resumes the service and
+  immediately redraws the bitmap.
+- **Calculation anomalies:**
+  - *First tick:* delta = 0, the current bytes are stored as the baseline,
+    output is `0 bps`.
+  - *Overflow / negative delta:* on counter reset or OS counter overflow
+    (`currentBytes < previousBytes`), this is treated as a "first tick" —
+    delta = 0.
+- **Auto-start after reboot:**
+  A `BroadcastReceiver` listens strictly for
+  `android.intent.action.BOOT_COMPLETED` (without `directBootAware`). The
+  service starts only after the device has been unlocked for the first
+  time. This is critical, because the DataStore / SharedPreferences
+  settings file lives in Credential Protected Storage and is unavailable
+  until first unlock. Reading the flag earlier would throw IOException
+  (crash).
 
-## 7. Android 14/15 FGS та Всі Необхідні Дозволи
-Для повноцінної стабільної роботи має бути прописано увесь наступний список `<uses-permission>`:
-- `FOREGROUND_SERVICE`: базова вимога для FGS в старих та нових API.
-- `FOREGROUND_SERVICE_SPECIAL_USE`: тип сервісу для Android 14+. Для нього **обов'язкова** наявність властивості: `<property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Continuous network speed status bar overlay" />` у тегу Service. Також, він передається під час ініціалізації: 
+## 7. Android 14/15 FGS and required permissions
+For stable operation, the following `<uses-permission>` entries must be
+declared:
+- `FOREGROUND_SERVICE`: base requirement for FGS across old and new APIs.
+- `FOREGROUND_SERVICE_SPECIAL_USE`: service type required on Android 14+.
+  The Service tag **must** include the following property:
+  `<property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+  android:value="Continuous network speed status bar overlay" />`.
+  The type is also passed during startup:
   ```kotlin
   startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
   ```
-- `ACCESS_NETWORK_STATE`: для відстежування стану через `NetworkCallback`.
-- `POST_NOTIFICATIONS`: запит на показ `smallIcon` у Status Bar.
-- `RECEIVE_BOOT_COMPLETED`: читається `BroadcastReceiver`.
-- `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`: запитується з налаштувань Dashboard.
+- `ACCESS_NETWORK_STATE`: needed to observe connectivity via
+  `NetworkCallback`.
+- `POST_NOTIFICATIONS`: required to show the `smallIcon` in the status bar.
+- `RECEIVE_BOOT_COMPLETED`: read by the `BroadcastReceiver`.
+- `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`: requested from the Dashboard
+  settings.
 
-**Налаштування самого каналу сповіщення (Notification Setup):**
-- **Priority/Importance:** `NotificationManager.IMPORTANCE_LOW` (без звуку, вібрації, але видиме значення у Status Bar).
-- **Visibility:** `NotificationCompat.VISIBILITY_PUBLIC` (показ швидкості прямо на Lock Screen).
+**Notification channel setup:**
+- **Priority / importance:** `NotificationManager.IMPORTANCE_LOW`
+  (no sound, no vibration, but the icon is still visible in the status bar).
+- **Visibility:** `NotificationCompat.VISIBILITY_PUBLIC` — speed is shown
+  directly on the lock screen.
