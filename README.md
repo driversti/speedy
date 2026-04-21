@@ -6,7 +6,7 @@ download speed directly in the status bar.
 Written from scratch in modern Kotlin with Jetpack Compose — no trackers,
 no ads, no analytics.
 
-![Dashboard](docs/screenshots/dashboard.png)
+![Dashboard](docs/screenshots/dashboard-active.png)
 
 ## Features
 
