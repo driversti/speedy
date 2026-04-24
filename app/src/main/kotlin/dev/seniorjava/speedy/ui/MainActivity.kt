@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
                         state = uiState,
                         onToggleEnabled = viewModel::onToggleEnabled,
                         onRefreshPermissions = viewModel::refreshPermissions,
+                        onDisplayModeChanged = viewModel::onDisplayModeChanged,
                     )
                 }
             }

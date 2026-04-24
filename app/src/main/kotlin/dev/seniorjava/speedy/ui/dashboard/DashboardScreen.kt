@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,6 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -49,6 +51,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.seniorjava.speedy.R
+import dev.seniorjava.speedy.domain.DisplayMode
 import dev.seniorjava.speedy.domain.ServiceState
 import dev.seniorjava.speedy.domain.SpeedFormatter
 import dev.seniorjava.speedy.domain.SpeedSample
@@ -60,6 +63,7 @@ fun DashboardScreen(
     state: DashboardUiState,
     onToggleEnabled: (Boolean) -> Unit,
     onRefreshPermissions: () -> Unit,
+    onDisplayModeChanged: (DisplayMode) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -87,6 +91,10 @@ fun DashboardScreen(
             LiveSpeedCard(
                 sample = state.sample,
                 isEnabled = state.isEnabled && state.serviceState == ServiceState.ACTIVE,
+            )
+            DisplayModeCard(
+                displayMode = state.displayMode,
+                onDisplayModeChanged = onDisplayModeChanged,
             )
             PermissionsSection(
                 state = state.permissions,
@@ -321,4 +329,45 @@ private fun PermissionCard(
             }
         }
     }
+}
+
+@Composable
+private fun DisplayModeCard(
+    displayMode: DisplayMode,
+    onDisplayModeChanged: (DisplayMode) -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = stringResource(R.string.dashboard_display_mode_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            DisplayMode.entries.forEach { mode ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onDisplayModeChanged(mode) }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = displayMode == mode,
+                        onClick = { onDisplayModeChanged(mode) },
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(displayModeLabel(mode)),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun displayModeLabel(mode: DisplayMode): Int = when (mode) {
+    DisplayMode.BOTH -> R.string.dashboard_display_mode_both
+    DisplayMode.DOWNLOAD -> R.string.dashboard_display_mode_download
+    DisplayMode.UPLOAD -> R.string.dashboard_display_mode_upload
 }
