@@ -150,7 +150,7 @@ class SpeedMonitorService : Service() {
     }
 
     private fun startForegroundWithPlaceholder() {
-        val notification = notificationFactory.build(SpeedSample.ZERO, DisplayMode.BOTH)
+        val notification = notificationFactory.build(SpeedSample.ZERO, currentDisplayMode)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 SpeedNotifications.NOTIFICATION_ID,
