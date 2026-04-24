@@ -1,19 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Upward arrow -->
+
+    <!--
+        Speedometer geometry:
+          Arc centre  (54, 54)  — geometric centre of the viewport, which
+                                  maps to the visible centre of a circular
+                                  launcher mask (visible area ≈ y=18..90).
+          Arc radius  26  → endpoints (28, 54) and (80, 54), apex (54, 28)
+          Needle      hub (54, 54) → tip (72, 36)
+          Hub         r = 5.5 outer, r = 2 inner
+        All comfortably inside the 66dp (radius 33) safe zone.
+    -->
+
+    <!-- Halo: wider copy of the arc under the main arc (Vector Drawable has no blur filter). -->
     <path
-        android:fillColor="#4CAF50"
-        android:pathData="M34,40 L44,40 L44,58 L54,58 L39,76 L24,58 L34,58 Z"
-        android:strokeColor="#4CAF50"
-        android:strokeWidth="0" />
-    <!-- Downward arrow -->
+        android:pathData="M 28,54 A 26,26 0 0,1 80,54"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeAlpha="0.25"
+        android:fillColor="#00000000">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="28" android:startY="28"
+                android:endX="80" android:endY="28">
+                <item android:offset="0.0" android:color="#FF4CAF50" />
+                <item android:offset="0.5" android:color="#FFFFC107" />
+                <item android:offset="1.0" android:color="#FFF44336" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Main thermal arc (green → amber → red) -->
     <path
-        android:fillColor="#2196F3"
-        android:pathData="M74,68 L64,68 L64,50 L54,50 L69,32 L84,50 L74,50 Z"
-        android:strokeColor="#2196F3"
-        android:strokeWidth="0" />
+        android:pathData="M 28,54 A 26,26 0 0,1 80,54"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="28" android:startY="28"
+                android:endX="80" android:endY="28">
+                <item android:offset="0.0" android:color="#FF4CAF50" />
+                <item android:offset="0.5" android:color="#FFFFC107" />
+                <item android:offset="1.0" android:color="#FFF44336" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Needle: hub centre → tip in the amber-to-red zone -->
+    <path
+        android:pathData="M 54,54 L 72,36"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round" />
+
+    <!-- Hub outer ring (white circle, r = 5.5). Drawn as two semicircles. -->
+    <path
+        android:pathData="M 48.5,54 A 5.5,5.5 0 1,1 59.5,54 A 5.5,5.5 0 1,1 48.5,54 Z"
+        android:fillColor="#FFFFFFFF" />
+
+    <!-- Hub inner dot (dark, r = 2) — ties back to the background mid-stop. -->
+    <path
+        android:pathData="M 52,54 A 2,2 0 1,1 56,54 A 2,2 0 1,1 52,54 Z"
+        android:fillColor="#FF1A202C" />
+
 </vector>

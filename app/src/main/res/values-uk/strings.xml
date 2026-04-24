@@ -7,6 +7,8 @@
     <string name="notification_channel_description">Відображення швидкості завантаження/вивантаження у статус-барі</string>
     <string name="notification_title">Швидкість мережі</string>
     <string name="notification_text">↓ %1$s | ↑ %2$s</string>
+    <string name="notification_text_download">↓ %1$s</string>
+    <string name="notification_text_upload">↑ %1$s</string>
 
     <!-- Dashboard -->
     <string name="dashboard_title">Швидкість мережі</string>
@@ -21,6 +23,11 @@
     <string name="dashboard_download_label">Завантаження</string>
     <string name="dashboard_upload_label">Вивантаження</string>
     <string name="dashboard_speed_placeholder">—</string>
+
+    <string name="dashboard_display_mode_title">Режим відображення</string>
+    <string name="dashboard_display_mode_both">Обидва (↓ завантаження + ↑ вивантаження)</string>
+    <string name="dashboard_display_mode_download">Тільки завантаження (↓)</string>
+    <string name="dashboard_display_mode_upload">Тільки вивантаження (↑)</string>
 
     <!-- Permissions -->
     <string name="permissions_title">Дозволи</string>

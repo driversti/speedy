@@ -7,6 +7,8 @@
     <string name="notification_channel_description">Shows download/upload speed in the status bar</string>
     <string name="notification_title">Network speed</string>
     <string name="notification_text">↓ %1$s | ↑ %2$s</string>
+    <string name="notification_text_download">↓ %1$s</string>
+    <string name="notification_text_upload">↑ %1$s</string>
 
     <!-- Dashboard -->
     <string name="dashboard_title">Network speed</string>
@@ -21,6 +23,11 @@
     <string name="dashboard_download_label">Download</string>
     <string name="dashboard_upload_label">Upload</string>
     <string name="dashboard_speed_placeholder">—</string>
+
+    <string name="dashboard_display_mode_title">Display mode</string>
+    <string name="dashboard_display_mode_both">Both (download + upload)</string>
+    <string name="dashboard_display_mode_download">Download only</string>
+    <string name="dashboard_display_mode_upload">Upload only</string>
 
     <!-- Permissions -->
     <string name="permissions_title">Permissions</string>
