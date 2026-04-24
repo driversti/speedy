@@ -8,6 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.seniorjava.speedy.R
+import dev.seniorjava.speedy.domain.DisplayMode
 import dev.seniorjava.speedy.domain.SpeedFormatter
 import dev.seniorjava.speedy.domain.SpeedSample
 import dev.seniorjava.speedy.ui.MainActivity
@@ -31,13 +32,17 @@ class SpeedNotificationFactory @Inject constructor(
         )
     }
 
-    fun build(sample: SpeedSample): Notification {
-        val bitmap = iconRenderer.render(sample)
-        val text = context.getString(
-            R.string.notification_text,
-            formatter.formatFull(sample.downloadBps),
-            formatter.formatFull(sample.uploadBps),
-        )
+    fun build(sample: SpeedSample, mode: DisplayMode): Notification {
+        val bitmap = iconRenderer.render(sample, mode)
+        val text = when (mode) {
+            DisplayMode.BOTH -> context.getString(
+                R.string.notification_text,
+                formatter.formatFull(sample.downloadBps),
+                formatter.formatFull(sample.uploadBps),
+            )
+            DisplayMode.DOWNLOAD -> "↓ ${formatter.formatFull(sample.downloadBps)}"
+            DisplayMode.UPLOAD -> "↑ ${formatter.formatFull(sample.uploadBps)}"
+        }
         return NotificationCompat.Builder(context, SpeedNotifications.CHANNEL_ID)
             .setSmallIcon(IconCompat.createWithBitmap(bitmap))
             .setContentTitle(context.getString(R.string.notification_title))
