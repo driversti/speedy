@@ -76,7 +76,7 @@ class SpeedIconRenderer @Inject constructor(
         const val TEXT_SIZE_PX = 48f
         const val UP_BASELINE_PX = 44f
         const val DOWN_BASELINE_PX = 94f
-        // Vertical center of the 96px bitmap, accounting for text cap-height (~40px at 48sp).
+        // Center of 96px bitmap: cap-height ≈ 24px at textSize 48f → (96−24)/2+24 = 60f.
         const val CENTER_BASELINE_PX = 60f
         // Leave 4px breathing room on each side before the system clips.
         const val MAX_TEXT_WIDTH_PX = 88f
