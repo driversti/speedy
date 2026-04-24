@@ -62,7 +62,7 @@ class SpeedMonitorService : Service() {
 
     private var screenOn: Boolean = true
     private var networkAvailable: Boolean = false
-    private var currentDisplayMode: DisplayMode = DisplayMode.BOTH
+    @Volatile private var currentDisplayMode: DisplayMode = DisplayMode.BOTH
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
