@@ -21,10 +21,12 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
@@ -38,6 +40,7 @@ class DashboardViewModelTest {
         every { isEnabled } returns isEnabledFlow
         every { displayMode } returns displayModeFlow
         coEvery { setDisplayMode(any()) } just runs
+        coEvery { setEnabled(any()) } just runs
     }
     private val speedStateHolder: SpeedStateHolder = mockk {
         every { serviceState } returns serviceStateFlow
@@ -90,8 +93,10 @@ class DashboardViewModelTest {
 
     @Test
     fun `onDisplayModeChanged persists the selected mode`() = runTest {
-        viewModel.onDisplayModeChanged(DisplayMode.UPLOAD)
-        testDispatcher.scheduler.advanceUntilIdle()
-        coVerify { settingsRepository.setDisplayMode(DisplayMode.UPLOAD) }
+        for (mode in DisplayMode.entries) {
+            viewModel.onDisplayModeChanged(mode)
+            testDispatcher.scheduler.advanceUntilIdle()
+            coVerify { settingsRepository.setDisplayMode(mode) }
+        }
     }
 }
