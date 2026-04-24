@@ -49,24 +49,39 @@ class SpeedIconRenderer @Inject constructor(
 
         when (mode) {
             DisplayMode.BOTH -> {
-                drawLine("↑" + formatter.formatCompact(sample.uploadBps), UP_BASELINE_PX)
-                drawLine("↓" + formatter.formatCompact(sample.downloadBps), DOWN_BASELINE_PX)
+                drawLine("↑" + formatter.formatCompact(sample.uploadBps), UP_BASELINE_PX, TEXT_SIZE_PX)
+                drawLine("↓" + formatter.formatCompact(sample.downloadBps), DOWN_BASELINE_PX, TEXT_SIZE_PX)
             }
             DisplayMode.DOWNLOAD -> {
-                drawLine("↓" + formatter.formatCompact(sample.downloadBps), CENTER_BASELINE_PX)
+                drawLine(
+                    "↓" + formatter.formatCompact(sample.downloadBps),
+                    CENTER_BASELINE_PX,
+                    SINGLE_TEXT_SIZE_PX,
+                    SINGLE_MAX_TEXT_WIDTH_PX,
+                )
             }
             DisplayMode.UPLOAD -> {
-                drawLine("↑" + formatter.formatCompact(sample.uploadBps), CENTER_BASELINE_PX)
+                drawLine(
+                    "↑" + formatter.formatCompact(sample.uploadBps),
+                    CENTER_BASELINE_PX,
+                    SINGLE_TEXT_SIZE_PX,
+                    SINGLE_MAX_TEXT_WIDTH_PX,
+                )
             }
         }
         return bitmap
     }
 
-    private fun drawLine(text: String, baseline: Float) {
-        paint.textSize = TEXT_SIZE_PX
+    private fun drawLine(
+        text: String,
+        baseline: Float,
+        initialTextSizePx: Float,
+        maxTextWidthPx: Float = MAX_TEXT_WIDTH_PX,
+    ) {
+        paint.textSize = initialTextSizePx
         val width = paint.measureText(text)
-        if (width > MAX_TEXT_WIDTH_PX) {
-            paint.textSize = TEXT_SIZE_PX * MAX_TEXT_WIDTH_PX / width
+        if (width > maxTextWidthPx) {
+            paint.textSize = initialTextSizePx * maxTextWidthPx / width
         }
         canvas.drawText(text, SIZE_PX / 2f, baseline, paint)
     }
@@ -74,11 +89,14 @@ class SpeedIconRenderer @Inject constructor(
     private companion object {
         const val SIZE_PX = 96
         const val TEXT_SIZE_PX = 48f
+        const val SINGLE_TEXT_SIZE_PX = 84f
         const val UP_BASELINE_PX = 44f
         const val DOWN_BASELINE_PX = 94f
         // Center of 96px bitmap: cap-height ≈ 24px at textSize 48f → (96−24)/2+24 = 60f.
-        const val CENTER_BASELINE_PX = 60f
+        const val CENTER_BASELINE_PX = 69f
         // Leave 4px breathing room on each side before the system clips.
         const val MAX_TEXT_WIDTH_PX = 88f
+        // In single-line mode use almost full width, so large readings stay visually bigger.
+        const val SINGLE_MAX_TEXT_WIDTH_PX = 96f
     }
 }
