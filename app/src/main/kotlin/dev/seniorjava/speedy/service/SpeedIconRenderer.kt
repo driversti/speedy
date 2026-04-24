@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.Typeface
+import dev.seniorjava.speedy.domain.DisplayMode
 import dev.seniorjava.speedy.domain.SpeedFormatter
 import dev.seniorjava.speedy.domain.SpeedSample
 import javax.inject.Inject
@@ -39,15 +40,25 @@ class SpeedIconRenderer @Inject constructor(
     }
 
     /**
-     * Redraws the reused bitmap with `upload` (top) and `download` (bottom)
-     * values. Thread-confined to the service coroutine: always called on the
-     * same dispatcher, so no external synchronization is needed.
+     * Redraws the reused bitmap according to [mode]:
+     *   - BOTH: upload top, download bottom (two lines)
+     *   - DOWNLOAD / UPLOAD: single value centered vertically
      */
-    fun render(sample: SpeedSample): Bitmap {
+    fun render(sample: SpeedSample, mode: DisplayMode): Bitmap {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-        drawLine("↑" + formatter.formatCompact(sample.uploadBps), UP_BASELINE_PX)
-        drawLine("↓" + formatter.formatCompact(sample.downloadBps), DOWN_BASELINE_PX)
+        when (mode) {
+            DisplayMode.BOTH -> {
+                drawLine("↑" + formatter.formatCompact(sample.uploadBps), UP_BASELINE_PX)
+                drawLine("↓" + formatter.formatCompact(sample.downloadBps), DOWN_BASELINE_PX)
+            }
+            DisplayMode.DOWNLOAD -> {
+                drawLine("↓" + formatter.formatCompact(sample.downloadBps), CENTER_BASELINE_PX)
+            }
+            DisplayMode.UPLOAD -> {
+                drawLine("↑" + formatter.formatCompact(sample.uploadBps), CENTER_BASELINE_PX)
+            }
+        }
         return bitmap
     }
 
@@ -65,6 +76,8 @@ class SpeedIconRenderer @Inject constructor(
         const val TEXT_SIZE_PX = 48f
         const val UP_BASELINE_PX = 44f
         const val DOWN_BASELINE_PX = 94f
+        // Vertical center of the 96px bitmap, accounting for text cap-height (~40px at 48sp).
+        const val CENTER_BASELINE_PX = 60f
         // Leave 4px breathing room on each side before the system clips.
         const val MAX_TEXT_WIDTH_PX = 88f
     }
