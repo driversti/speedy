@@ -353,7 +353,7 @@ private fun DisplayModeCard(
                 ) {
                     RadioButton(
                         selected = displayMode == mode,
-                        onClick = { onDisplayModeChanged(mode) },
+                        onClick = null,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
