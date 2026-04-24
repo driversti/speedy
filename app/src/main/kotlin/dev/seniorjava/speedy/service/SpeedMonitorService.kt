@@ -18,7 +18,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import dagger.hilt.android.AndroidEntryPoint
+import dev.seniorjava.speedy.data.SettingsRepository
 import dev.seniorjava.speedy.data.SpeedStateHolder
+import dev.seniorjava.speedy.domain.DisplayMode
 import dev.seniorjava.speedy.domain.ServiceState
 import dev.seniorjava.speedy.domain.SpeedCalculator
 import dev.seniorjava.speedy.domain.SpeedSample
@@ -45,6 +47,7 @@ import javax.inject.Inject
  *   - Network loss (airplane mode, no transport) → pause + hide icon via
  *     [NotificationManagerCompat.cancel], and transition to WAITING_FOR_NETWORK.
  *     A [ConnectivityManager.NetworkCallback] resumes when transport reappears.
+ *   - [DisplayMode] is collected from [SettingsRepository] and applied on each tick.
  */
 @AndroidEntryPoint
 class SpeedMonitorService : Service() {
@@ -52,12 +55,14 @@ class SpeedMonitorService : Service() {
     @Inject lateinit var calculator: SpeedCalculator
     @Inject lateinit var notificationFactory: SpeedNotificationFactory
     @Inject lateinit var stateHolder: SpeedStateHolder
+    @Inject lateinit var settingsRepository: SettingsRepository
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var tickJob: Job? = null
 
     private var screenOn: Boolean = true
     private var networkAvailable: Boolean = false
+    private var currentDisplayMode: DisplayMode = DisplayMode.BOTH
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -97,6 +102,12 @@ class SpeedMonitorService : Service() {
     override fun onCreate() {
         super.onCreate()
         networkAvailable = hasAnyNetwork()
+
+        scope.launch {
+            settingsRepository.displayMode.collect { mode ->
+                currentDisplayMode = mode
+            }
+        }
 
         ContextCompat.registerReceiver(
             this,
@@ -139,7 +150,7 @@ class SpeedMonitorService : Service() {
     }
 
     private fun startForegroundWithPlaceholder() {
-        val notification = notificationFactory.build(SpeedSample.ZERO)
+        val notification = notificationFactory.build(SpeedSample.ZERO, DisplayMode.BOTH)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 SpeedNotifications.NOTIFICATION_ID,
@@ -174,7 +185,7 @@ class SpeedMonitorService : Service() {
                 nowMs = nowMs,
             )
             stateHolder.updateSpeed(sample)
-            val notification = notificationFactory.build(sample)
+            val notification = notificationFactory.build(sample, currentDisplayMode)
             runCatching {
                 manager.notify(SpeedNotifications.NOTIFICATION_ID, notification)
             }
