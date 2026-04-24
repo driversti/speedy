@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.seniorjava.speedy.data.SettingsRepository
 import dev.seniorjava.speedy.data.SpeedStateHolder
+import dev.seniorjava.speedy.domain.DisplayMode
 import dev.seniorjava.speedy.domain.ServiceState
 import dev.seniorjava.speedy.domain.SpeedSample
 import dev.seniorjava.speedy.service.SpeedServiceController
@@ -12,7 +13,6 @@ import dev.seniorjava.speedy.ui.PermissionChecker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -35,12 +35,14 @@ class DashboardViewModel @Inject constructor(
         speedStateHolder.serviceState,
         speedStateHolder.speed,
         permissions,
-    ) { enabled, serviceState, sample, perm ->
+        settingsRepository.displayMode,
+    ) { enabled, serviceState, sample, perm, displayMode ->
         DashboardUiState(
             isEnabled = enabled,
             serviceState = serviceState,
             sample = sample,
             permissions = perm,
+            displayMode = displayMode,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -50,6 +52,7 @@ class DashboardViewModel @Inject constructor(
             serviceState = ServiceState.STOPPED,
             sample = SpeedSample.ZERO,
             permissions = permissions.value,
+            displayMode = DisplayMode.BOTH,
         ),
     )
 
@@ -82,6 +85,12 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    fun onDisplayModeChanged(mode: DisplayMode) {
+        viewModelScope.launch {
+            settingsRepository.setDisplayMode(mode)
+        }
+    }
+
     fun refreshPermissions() {
         permissions.value = readPermissions()
     }
@@ -103,6 +112,7 @@ data class DashboardUiState(
     val serviceState: ServiceState,
     val sample: SpeedSample,
     val permissions: PermissionsState,
+    val displayMode: DisplayMode,
 )
 
 data class PermissionsState(
