@@ -40,8 +40,14 @@ class SpeedNotificationFactory @Inject constructor(
                 formatter.formatFull(sample.downloadBps),
                 formatter.formatFull(sample.uploadBps),
             )
-            DisplayMode.DOWNLOAD -> "↓ ${formatter.formatFull(sample.downloadBps)}"
-            DisplayMode.UPLOAD -> "↑ ${formatter.formatFull(sample.uploadBps)}"
+            DisplayMode.DOWNLOAD -> context.getString(
+                R.string.notification_text_download,
+                formatter.formatFull(sample.downloadBps),
+            )
+            DisplayMode.UPLOAD -> context.getString(
+                R.string.notification_text_upload,
+                formatter.formatFull(sample.uploadBps),
+            )
         }
         return NotificationCompat.Builder(context, SpeedNotifications.CHANNEL_ID)
             .setSmallIcon(IconCompat.createWithBitmap(bitmap))
